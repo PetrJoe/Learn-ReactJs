@@ -1,0 +1,84 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Login from './Auth/Login';
+import Register from './Auth/Register';
+import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import NotFound from './pages/NotFound';
+
+const ProtectedRoute = ({ element: Element, ...rest }) => {
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  return (
+    <Route
+      {...rest}
+      element={isLoggedIn ? <Element /> : <Route to="/login" />}
+    />
+  );
+};
+
+const App = () => {
+  const handleSuccessfulLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
+
+  return (
+    <Router>
+      <div className="App">
+        <Navbar isAuthenticated={isLoggedIn} onLogout={handleLogout} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route
+            path="/login"
+            element={<Login onSuccessfulLogin={handleSuccessfulLogin} />}
+          />
+          <Route path="/register" element={<Register />} />
+          <ProtectedRoute
+            path="/dashboard"
+            element={<Dashboard />}
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+          // <Route path="/" element={<Home />} />
+          // <Route path="/about" element={<About />} />
+          // <Route path="/contact" element={<Contact />} />
+          // <Route path="/dashboard" element={<DashboardComponent />} />
+          // <Route
+          //   path="/login"
+          //   element={<Login onSuccessfulLogin={handleSuccessfulLogin} />}
+          // />
+          // <Route path="/register" element={<Register />} />
+          
+          // <Route path="*" element={<NotFound />} />

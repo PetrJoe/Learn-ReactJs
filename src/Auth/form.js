@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-const Login = () => {
+const LoginComponent = () => {
+
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
 
-  const navigate = useNavigate(); 
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  
+  const handleSuccessfulLogin = (token, user) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+  };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,14 +37,16 @@ const Login = () => {
 
         if (data.token) {
           localStorage.setItem('token', data.token);
-          navigate('/dashboard'); 
-          window.location.reload()
+          handleSuccessfulLogin(data.token, data.user);
+          navigate('/dashboard/');
+          // console.log(navigate);
         }
       })
       .catch((error) => {
         console.error('Error:', error);
       });
   };
+
 
   return (
     <>
@@ -56,17 +66,17 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
-                Username
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                Email
               </label>
               <div className="mt-2">
                 <input
                   type="text"
-                  name="username"
-                  id="username"
-                  value={formData.username}
+                  name="email"
+                  id="email"
+                  value={formData.email}
                   onChange={handleChange}
-                  autoComplete="username"
+                  autoComplete="email"
                   required
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900
                     shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400
@@ -118,4 +128,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginComponent;

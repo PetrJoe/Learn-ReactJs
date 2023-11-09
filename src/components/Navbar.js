@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const Navbar = ({ isAuthenticated, onLogout }) => {
+const Navbar = ({ onLogout }) => {
+
+  const [IsAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('access_token') !== null) {
+      setIsAuthenticated(true);
+    }
+  }, [IsAuthenticated]);
+
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
   const navigate = useNavigate();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -11,14 +22,14 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    onLogout();
+    onLogout(); 
     navigate('/');
   }
 
   const navLinks = [
     { to: '/', text: 'Home' },
-    { to: '/about', text: 'About' },
-    { to: '/contact', text: 'Contact' },
+    { to: '/about/', text: 'About' },
+    { to: '/contact/', text: 'Contact' },
   ];
 
   return (
@@ -34,9 +45,9 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
+            {IsAuthenticated ? (
               <>
-                <Link to="/dashboard" className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Home</Link>
+                <Link to="/" className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Home</Link>
                 <button onClick={handleLogout} className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Logout</button>
               </>
             ) : (
@@ -59,16 +70,17 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
       
       <div className={`md:hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="flex justify-end p-4">
-          <button className="text-white text-2xl" onClick={toggleSidebar}>&times;</button>
+        <button className="text-white text-2xl" onClick={toggleSidebar}>&times;</button>
         </div>
        
         <div className="flex flex-col items-center">
-          {isAuthenticated ? (
+          {IsAuthenticated ? (
             <>
-              <Link to="/dashboard" className="text-white mb-2" onClick={closeSidebar}>Home</Link>
+              <Link to="/dashboard/" className="text-white mb-2" onClick={closeSidebar}>Home</Link>
+              <button onClick={handleLogout} className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Logout</button>
               <button onClick={handleLogout} className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Logout</button>
             </>
-          ) : (
+            ) : (
             <>
               {navLinks.map(link => (
                 <Link key={link.to} to={link.to} className="text-white mb-2" onClick={closeSidebar}>
