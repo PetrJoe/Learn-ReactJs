@@ -1,41 +1,81 @@
 import React,{useEffect, useState} from "react";
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { Carousel } from 'flowbite-react';
+
 
 const Home = () => {
   const isAuthenticated = !!localStorage.getItem('refresh_token');
-  
-  const [message, setMessage] = useState('');
+  const [user, setUser] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex((prevIndex) => (prevIndex + 1) % 5);
+    }, 5000);
+
+    return () => clearInterval(interval);
+
+    const fetchUser = async () => {
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) return;
+
+      try {
+        const response = await fetch('/authenticated_user/', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+
+        if (response.status === 401) {
+          const refreshToken = localStorage.getItem('refresh_token');
+          if (!refreshToken) return;
+
+          const refreshResponse = await fetch('/api/token/refresh/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh: refreshToken })
+          });
+
+          if (refreshResponse.ok) {
+            const newAccessToken = await refreshResponse.json();
+            localStorage.setItem('access_token', newAccessToken.access);
+            fetchUser();
+          }
+        } else {
+          const data = await response.json();
+          setUser(data);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    }
+
     const accessToken = localStorage.getItem('refresh_token');
     if (accessToken) {
       console.log('Access Token:', accessToken);
     }
 
-    (async () => {
-      try {
-        const { data } = await axios.get('http://127.0.0.1:8000/home/', {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-
-        setMessage(data.message);
-      } catch (e) {
-        console.log('not auth')
-      }
-    })();
+    fetchUser();
   }, []);
-
 
 
   return (
     <>
       {isAuthenticated ? (
-        <div>
-          <p>User is authenticated. Hi {message}</p></div>
+        <div className="h-56 sm:h-64 xl:h-80 2xl:h-96">
+          <Carousel activeIndex={activeIndex} onSelect={() => {}}>
+            <img src="https://flowbite.com/docs/images/carousel/carousel-1.svg" alt="..." />
+            <img src="https://flowbite.com/docs/images/carousel/carousel-2.svg" alt="..." />
+            <img src="https://flowbite.com/docs/images/carousel/carousel-3.svg" alt="..." />
+            <img src="https://flowbite.com/docs/images/carousel/carousel-4.svg" alt="..." />
+            <img src="https://flowbite.com/docs/images/carousel/carousel-5.svg" alt="..." />
+          </Carousel>
+          <p>{user && <h1>Welcome, {user.first_name} {user.last_name}</h1>}
+          </p>
+        </div>
       ) : (
         <div>
           <div className="bg-white">
